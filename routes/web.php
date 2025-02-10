@@ -4,8 +4,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UsuarioController;
 
 Route::get('/', [UsuarioController::class, 'index']);
-Route::post('/usuarios', [UsuarioController::class, 'store']);
-Route::get('/usuarios/{id}', [UsuarioController::class, 'show']);
-Route::put('/usuarios/{id}', [UsuarioController::class, 'update']);
-Route::delete('/usuarios/{id}', [UsuarioController::class, 'destroy']);
- 
+Route::post('/cadastrarUsuario', [UsuarioController::class, 'cadastrarUsuario']);
+Route::get('/visualizarUsuarios/{id}', [UsuarioController::class, 'visualizarUsuarios']);
+Route::put('/AtualizarUsuario/{id}', [UsuarioController::class, 'AtualizarUsuario']);
+Route::delete('/deletarUsuario/{id}', [UsuarioController::class, 'deletarUsuario']);
+Route::get('/telaUsuario',[UsuarioController::class, 'telaUsuario']);
