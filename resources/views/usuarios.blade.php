@@ -41,9 +41,19 @@
             border-radius: 5px;
             overflow: hidden;
         }
+        /*Modal Visualizar*/
         .modal-header {
-            background-color: #0047ab;
-            color: white;
+            background-color: #0DCAF0
+        }
+
+        /*Modal Editar */
+        .modal-editar .modal-header{
+            background-color: #198754;
+        }
+
+        /*Modal Confirmar Exclusão*/
+        .modal-exclusao .modal-header{
+            background-color: #DC3545
         }
     </style>
 </head>
@@ -100,7 +110,7 @@
     </div>
 
     <!-- Modal para visualização de usuário -->
-    <div class="modal fade" id="visualizarModal" tabindex="-1" aria-labelledby="visualizarModalLabel" aria-hidden="true">
+    <div class="modal fade modal-visualizar" id="visualizarModal" tabindex="-1" aria-labelledby="visualizarModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
@@ -134,8 +144,8 @@
         </div>
     </div>
 
-    <!-- Modal para editar usuário -->
-<div id="editarModal" class="modal fade" tabindex="-1" aria-hidden="true">
+<!-- Modal para editar usuário -->
+<div id="editarModal" class="modal fade modal-editar" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
@@ -146,19 +156,24 @@
                 <form id="editarUsuarioForm">
                     <div class="mb-3">
                         <label for="modal_edit_nome" class="form-label">Nome</label>
-                        <input type="text" id="modal_edit_nome" name="nome" class="form-control" required>
+                        <input type="text" id="modal_edit_name" name="nome" class="form-control" required>
                     </div>
                     <div class="mb-3">
                         <label for="modal_edit_idade" class="form-label">Idade</label>
-                        <input type="number" id="modal_edit_idade" name="idade" class="form-control" required min="18" max="120">
-                    </div>
+                        <input type="number" id="modal_edit_idade" name="idade" class="form-control" required min="18" max="120" maxlength="3">
+                    </div>     
                     <div class="mb-3">
-                        <label for="modal_edit_data_nascimento" class="form-label">Data de Nascimento</label>
+                        <label for="modal_edit_profissao" class="form-label">Data de Nascimento</label>
                         <input type="date" id="modal_edit_data_nascimento" name="data_nascimento" class="form-control" required>
                     </div>
                     <div class="mb-3">
-                        <label for="modal_edit_profissao" class="form-label">Profissão</label>
-                        <input type="text" id="modal_edit_profissao" name="profissao" class="form-control" required>
+                        <label for="modal_edit_profissao" class="form-label">Profissao</label>
+                        <select class="form-select" id="modal_edit_profissao" name="profissao" required>
+                            <option value="Desenvolvedor">Desenvolvedor</option>
+                            <option value="Designer">Designer</option>
+                            <option value="Gerente">Gerente</option>
+                            <option value="Analista">Analista</option>
+                        </select>
                     </div>
                 </form>
             </div>
@@ -170,11 +185,8 @@
     </div>
 </div>
 
-<p>ljknhuigh89ihoji</p>
-
-
     <!-- Modal de confirmação de exclusão -->
-    <div class="modal fade" id="confirmarExclusaoModal" tabindex="-1" aria-labelledby="confirmarExclusaoModalLabel" aria-hidden="true">
+    <div class="modal fade modal-exclusao" id="confirmarExclusaoModal" tabindex="-1" aria-labelledby="confirmarExclusaoModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
@@ -197,17 +209,24 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
     <script>
-        
+// Carrega os usuários ao carregar a página
 $(document).ready(function () {
     carregarUsuarios();
 
+//Evento de clique para salvar um novo usuário
     $('#btn-salvar').click(function (e) {
-        e.preventDefault();
+        e.preventDefault(); // Impede que o formulário recarregue a página automaticamente
 
+        // Obtém os valores dos campos de entrada
         var nome = $('#nome').val();
         var idade = $('#idade').val();
         var data_nascimento = $('#data_nascimento').val();
         var profissao = $('#profissao').val();
+
+        if (idade.length > 3) {
+            toastr.error("Erro: A idade não pode ter mais de três dígitos.");
+            return;
+        }
 
         let formData = {
             nome: nome,
@@ -216,6 +235,8 @@ $(document).ready(function () {
             profissao: profissao
         };
 
+
+        // Envia os dados via AJAX para cadastr
         $.ajax({
             type: "POST",
             url: "/cadastrarUsuario",
@@ -234,14 +255,14 @@ $(document).ready(function () {
             }
         });
     });
-
+    //Função para carregar a lista de usuários
     function carregarUsuarios() {
         $.ajax({
             type: "GET",
             url: "/telaUsuario",
             dataType: "json",
             success: function (usuarios) {
-                $('#usuariosTable').empty();
+                $('#usuariosTable').empty();// Limpa a tabela
                 $.each(usuarios, function (index, usuario) {
                     adicionarLinhaTabela(usuario);
                 });
@@ -251,7 +272,7 @@ $(document).ready(function () {
             }
         });
     }
-
+    //Adiciona uma nova linha na tabela de usuários
     function adicionarLinhaTabela(usuario) {
         var novaLinha =
             '<tr data-id="' + usuario.id + '">' +
@@ -267,7 +288,7 @@ $(document).ready(function () {
             '</tr>';
         $('#usuariosTable').append(novaLinha);
     }
-
+    //Evento para visualizar detalhes do usuário
     $(document).on('click', '.visualizar', function () {
         let id = $(this).data('id');
 
@@ -286,35 +307,45 @@ $(document).ready(function () {
             }
         });
     });
-
+    //Evento para editar um usuário
     $(document).on('click', '.editar', function () {
-        let id = $(this).data('id');
+    let id = $(this).data('id');
 
-        $.ajax({
-            url: '/visualizarUsuarios/' + id,
-            type: 'GET',
-            success: function (response) {
-                $('#modal_edit_nome').val(response.nome);
-                $('#modal_edit_idade').val(response.idade);
-                $('#modal_edit_data_nascimento').val(response.data_nascimento);
-                $('#modal_edit_profissao').val(response.profissao);
-                $('#editarModal').data('id', id);
-                $('#editarModal').modal('show');
-            },
-            error: function () {
-                toastr.error('Erro ao carregar os dados para edição.');
-            }
-        });
+    $.ajax({
+        url: '/visualizarUsuarios/' + id,
+        type: 'GET',
+        success: function (response) {
+            $('#modal_edit_name').val(response.nome);
+            $('#modal_edit_idade').val(response.idade);
+            $('#modal_edit_data_nascimento').val(response.data_nascimento);
+            $('#modal_edit_profissao').val(response.profissao);  // Preenche o select com a profissão do usuário
+            $('#editarModal').data('id', id);
+            $('#editarModal').modal('show');
+        },
+        
+        error: function () {
+            toastr.error('Erro ao carregar os dados para edição.');
+        }
     });
+});
 
-    $('#salvar-edicao').html('<i class="fas fa-save"></i>').click(function () {
+//Salvar edição do usuário
+    $('#salvar-edicao').click(function () {
         let id = $('#editarModal').data('id');
+        let nome= $('#modal_edit_name').val();
+        let idade= $('#modal_edit_idade').val();
+        console.log("Nome antes do envio:", nome); // Debug
+        
+        if (idade.length > 3) {
+            toastr.error("Erro: A idade não pode ter mais de três dígitos.");
+            return;
+        }
 
         $.ajax({
-            url: '/AtualizarUsuario/' + id,
+            url: '/atualizarUsuario/' + id,
             type: 'PUT',
             data: {
-                nome: $('#modal_edit_nome').val(),
+                nome: nome,
                 idade: $('#modal_edit_idade').val(),
                 data_nascimento: $('#modal_edit_data_nascimento').val(),
                 profissao: $('#modal_edit_profissao').val()
@@ -328,17 +359,18 @@ $(document).ready(function () {
                 carregarUsuarios();
             },
             error: function (xhr) {
-                toastr.error(xhr.responseJSON.error || 'Erro ao atualizar registro.');
+                toastr.error('Erro ao atualizar registro.');
             }
         });
     });
 
+    //Evento para confirmar exclusão de um usuário
     $(document).on('click', '.deletar', function () {
         let id = $(this).data('id');
         $('#confirmarExclusaoModal').modal('show');
         $('#confirmarExclusaoBtn').data('id', id);
     });
-
+    //Excluir usuário confirmado
     $('#confirmarExclusaoBtn').html('<i class="fas fa-trash"></i>').click(function () {
         let id = $(this).data('id');
 

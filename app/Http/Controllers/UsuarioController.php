@@ -60,10 +60,10 @@ class UsuarioController extends Controller
     public function visualizarUsuarios($id)
     {
         try {
-            $usuario = Usuario::findOrFail($id);
+                    $usuario = Usuario::findOrFail($id);
             return response()->json($usuario);
         } catch (Exception $e) {
-            return response()->json(['error' => 'Erro ao buscar usuário: ' . $e->getMessage()], 500);
+                  return response()->json(['error' => 'Erro ao buscar usuário: ' . $e->getMessage()], 500);
         }
     }
 
