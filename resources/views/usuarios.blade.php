@@ -3,10 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>CRUD de Usuários - Polícia Militar</title> 
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/css/toastr.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+
+
     <style>
         body {
             background: linear-gradient(to bottom, #ffffff, #e0f7fa); /* Fundo branco e azul */
@@ -36,9 +41,19 @@
             border-radius: 5px;
             overflow: hidden;
         }
+        /*Modal Visualizar*/
         .modal-header {
-            background-color: #0047ab;
-            color: white;
+            background-color: #0DCAF0
+        }
+
+        /*Modal Editar */
+        .modal-editar .modal-header{
+            background-color: #198754;
+        }
+
+        /*Modal Confirmar Exclusão*/
+        .modal-exclusao .modal-header{
+            background-color: #DC3545
         }
     </style>
 </head>
@@ -74,7 +89,7 @@
                     <option value="Analista">Analista</option>
                 </select>
             </div>
-            <button type="submit" class="btn btn-primary">Salvar</button>
+            <button id="btn-salvar" type="submit" class="btn btn-primary">Salvar</button> 
         </form>
 
         <h2>Lista de Usuários</h2>
@@ -95,7 +110,7 @@
     </div>
 
     <!-- Modal para visualização de usuário -->
-    <div class="modal fade" id="visualizarModal" tabindex="-1" aria-labelledby="visualizarModalLabel" aria-hidden="true">
+    <div class="modal fade modal-visualizar" id="visualizarModal" tabindex="-1" aria-labelledby="visualizarModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
@@ -129,44 +144,49 @@
         </div>
     </div>
 
-    <!-- Modal para editar usuário -->
-    <div class="modal fade" id="editarModal" tabindex="-1" aria-labelledby="editarModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="editarModalLabel">Editar Usuário</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-
-                <div class="modal-body">
-                    <!-- Campos de input para edição -->
+<!-- Modal para editar usuário -->
+<div id="editarModal" class="modal fade modal-editar" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Editar Usuário</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editarUsuarioForm">
                     <div class="mb-3">
                         <label for="modal_edit_nome" class="form-label">Nome</label>
-                        <input type="text" class="form-control" id="modal_edit_nome">
+                        <input type="text" id="modal_edit_name" name="nome" class="form-control" required>
                     </div>
                     <div class="mb-3">
                         <label for="modal_edit_idade" class="form-label">Idade</label>
-                        <input type="number" class="form-control" id="modal_edit_idade">
+                        <input type="number" id="modal_edit_idade" name="idade" class="form-control" required min="18" max="120" maxlength="3">
+                    </div>     
+                    <div class="mb-3">
+                        <label for="modal_edit_profissao" class="form-label">Data de Nascimento</label>
+                        <input type="date" id="modal_edit_data_nascimento" name="data_nascimento" class="form-control" required>
                     </div>
                     <div class="mb-3">
-                        <label for="modal_edit_data_nascimento" class="form-label">Data de Nascimento</label>
-                        <input type="date" class="form-control" id="modal_edit_data_nascimento">
+                        <label for="modal_edit_profissao" class="form-label">Profissao</label>
+                        <select class="form-select" id="modal_edit_profissao" name="profissao" required>
+                            <option value="Desenvolvedor">Desenvolvedor</option>
+                            <option value="Designer">Designer</option>
+                            <option value="Gerente">Gerente</option>
+                            <option value="Analista">Analista</option>
+                        </select>
                     </div>
-                    <div class="mb-3">
-                        <label for="modal_edit_profissao" class="form-label">Profissão</label>
-                        <input type="text" class="form-control" id="modal_edit_profissao">
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
-                    <button type="button" class="btn btn-primary" id="salvarEdicaoBtn">Salvar</button>
-                </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                <button type="button" class="btn btn-primary" id="salvar-edicao">Salvar</button>
             </div>
         </div>
     </div>
+</div>
 
     <!-- Modal de confirmação de exclusão -->
-    <div class="modal fade" id="confirmarExclusaoModal" tabindex="-1" aria-labelledby="confirmarExclusaoModalLabel" aria-hidden="true">
+    <div class="modal fade modal-exclusao" id="confirmarExclusaoModal" tabindex="-1" aria-labelledby="confirmarExclusaoModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
@@ -187,157 +207,193 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
+    
     <script>
-        // Referência ao formulário e à tabela
-        const usuarioForm = document.getElementById('usuarioForm');
-        const usuariosTable = document.getElementById('usuariosTable');
-        let usuarioEditando = null;
+// Carrega os usuários ao carregar a página
+$(document).ready(function () {
+    carregarUsuarios();
 
-        // Função para carregar os usuários do localStorage
-        function carregarUsuarios() {
-            const usuarios = JSON.parse(localStorage.getItem('usuarios')) || [];
-            usuarios.forEach(usuario => {
-                adicionarUsuarioNaTabela(usuario);
-            });
+//Evento de clique para salvar um novo usuário
+    $('#btn-salvar').click(function (e) {
+        e.preventDefault(); // Impede que o formulário recarregue a página automaticamente
+
+        // Obtém os valores dos campos de entrada
+        var nome = $('#nome').val();
+        var idade = $('#idade').val();
+        var data_nascimento = $('#data_nascimento').val();
+        var profissao = $('#profissao').val();
+
+        if (idade.length > 3) {
+            toastr.error("Erro: A idade não pode ter mais de três dígitos.");
+            return;
         }
 
-        // Função para salvar usuários no localStorage
-        function salvarUsuarios() {
-            const usuarios = [];
-            usuariosTable.querySelectorAll('tr').forEach(linha => {
-                const nome = linha.cells[0].textContent;
-                const idade = linha.cells[1].textContent;
-                const dataNascimento = linha.cells[2].textContent;
-                const profissao = linha.cells[3].textContent;
-                usuarios.push({ nome, idade, dataNascimento, profissao });
-            });
-            localStorage.setItem('usuarios', JSON.stringify(usuarios));
-        }
+        let formData = {
+            nome: nome,
+            idade: idade,
+            data_nascimento: data_nascimento,
+            profissao: profissao
+        };
 
-        // Função para adicionar um usuário na tabela
-        function adicionarUsuarioNaTabela(usuario) {
-            const novaLinha = document.createElement('tr');
-            novaLinha.innerHTML = ` 
-                <td>${usuario.nome}</td>
-                <td>${usuario.idade}</td>
-                <td>${usuario.dataNascimento}</td>
-                <td>${usuario.profissao}</td>
-                <td>
-                    <button class="btn btn-info btn-sm" onclick="visualizarUsuario('${usuario.nome}', ${usuario.idade}, '${usuario.dataNascimento}', '${usuario.profissao}')">Visualizar</button>
-                    <button class="btn btn-success btn-sm" onclick="editarUsuario('${usuario.nome}', ${usuario.idade}, '${usuario.dataNascimento}', '${usuario.profissao}')">Editar</button>
-                    <button class="btn btn-danger btn-sm" onclick="pedirConfirmacaoExclusao('${usuario.nome}')">Deletar</button>
-                </td>
-            `;
-            usuariosTable.appendChild(novaLinha);
-        }
 
-        // Função para adicionar ou editar usuário na tabela
-        usuarioForm.addEventListener('submit', function (event) {
-            event.preventDefault();
-
-            if (!usuarioForm.checkValidity()) {
-                event.stopPropagation();
-                usuarioForm.classList.add('was-validated');
-                return;
+        // Envia os dados via AJAX para cadastr
+        $.ajax({
+            type: "POST",
+            url: "/cadastrarUsuario",
+            data: formData,
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            },
+            dataType: "json",
+            success: function (usuario) {
+                adicionarLinhaTabela(usuario);
+                $('#usuarioForm').trigger("reset");
+                toastr.success("Usuário cadastrado com sucesso!");
+            },
+            error: function () {
+                toastr.error("Erro ao salvar o usuário.");
             }
-
-            const nome = document.getElementById('nome').value;
-            const idade = document.getElementById('idade').value;
-            const dataNascimento = document.getElementById('data_nascimento').value;
-            const profissao = document.getElementById('profissao').value;
-
-            if (usuarioEditando === null) {
-                adicionarUsuarioNaTabela({ nome, idade, dataNascimento, profissao });
-                toastr.success('Usuário adicionado com sucesso!');
-            } else {
-                const linha = usuariosTable.rows[usuarioEditando];
-                linha.cells[0].textContent = nome;
-                linha.cells[1].textContent = idade;
-                linha.cells[2].textContent = dataNascimento;
-                linha.cells[3].textContent = profissao;
-                usuarioEditando = null;
-                toastr.success('Usuário atualizado com sucesso!');
-            }
-
-            salvarUsuarios();
-            usuarioForm.reset();
-            usuarioForm.classList.remove('was-validated');
         });
-
-        // Função para visualizar os dados de um usuário
-        function visualizarUsuario(nome, idade, dataNascimento, profissao) {
-            document.getElementById('modal_nome').value = nome;
-            document.getElementById('modal_idade').value = idade;
-            document.getElementById('modal_data_nascimento').value = dataNascimento;
-            document.getElementById('modal_profissao').value = profissao;
-
-            // Mostrar o modal apenas para visualização (sem permitir edição)
-            const modal = new bootstrap.Modal(document.getElementById('visualizarModal'));
-            modal.show();
-        }
-
-        // Função para editar os dados de um usuário
-        function editarUsuario(nome, idade, dataNascimento, profissao) {
-            // Preencher os campos de input no modal com os dados do usuário
-            document.getElementById('modal_edit_nome').value = nome;
-            document.getElementById('modal_edit_idade').value = idade;
-            document.getElementById('modal_edit_data_nascimento').value = dataNascimento;
-            document.getElementById('modal_edit_profissao').value = profissao;
-
-            // Ativar o botão de salvar no modal
-            document.getElementById('salvarEdicaoBtn').onclick = function() {
-                salvarEdicaoUsuario(nome);
-            };
-
-            // Mostrar o modal de edição
-            const modal = new bootstrap.Modal(document.getElementById('editarModal'));
-            modal.show();
-        }
-
-        // Função para salvar a edição no modal
-        function salvarEdicaoUsuario(nomeAntigo) {
-            const nome = document.getElementById('modal_edit_nome').value;
-            const idade = document.getElementById('modal_edit_idade').value;
-            const dataNascimento = document.getElementById('modal_edit_data_nascimento').value;
-            const profissao = document.getElementById('modal_edit_profissao').value;
-
-            const linha = Array.from(usuariosTable.rows).find(row => row.cells[0].textContent === nomeAntigo);
-            if (linha) {
-                linha.cells[0].textContent = nome;
-                linha.cells[1].textContent = idade;
-                linha.cells[2].textContent = dataNascimento;
-                linha.cells[3].textContent = profissao;
-                salvarUsuarios();
-                toastr.success('Usuário editado com sucesso!');
+    });
+    //Função para carregar a lista de usuários
+    function carregarUsuarios() {
+        $.ajax({
+            type: "GET",
+            url: "/telaUsuario",
+            dataType: "json",
+            success: function (usuarios) {
+                $('#usuariosTable').empty();// Limpa a tabela
+                $.each(usuarios, function (index, usuario) {
+                    adicionarLinhaTabela(usuario);
+                });
+            },
+            error: function () {
+                toastr.error("Erro ao carregar os usuários.");
             }
+        });
+    }
+    //Adiciona uma nova linha na tabela de usuários
+    function adicionarLinhaTabela(usuario) {
+        var novaLinha =
+            '<tr data-id="' + usuario.id + '">' +
+            '<td>' + usuario.nome + '</td>' +
+            '<td>' + usuario.idade + '</td>' +
+            '<td>' + usuario.data_nascimento + '</td>' +
+            '<td>' + usuario.profissao + '</td>' +
+            '<td>' +
+            "<button class='btn btn-info btn-sm ms-1 visualizar' data-id='" + usuario.id + "'><i class='fas fa-eye'></i></button>" +
+            "<button class='btn btn-success btn-sm ms-1 editar' data-id='" + usuario.id + "'><i class='fas fa-edit'></i></button>" +
+            "<button class='btn btn-danger btn-sm ms-1 deletar' data-id='" + usuario.id + "'><i class='fas fa-trash'></i></button>" +
+            '</td>' +
+            '</tr>';
+        $('#usuariosTable').append(novaLinha);
+    }
+    //Evento para visualizar detalhes do usuário
+    $(document).on('click', '.visualizar', function () {
+        let id = $(this).data('id');
 
-            const modal = bootstrap.Modal.getInstance(document.getElementById('editarModal'));
-            modal.hide();
-        }
-
-        // Função para pedir confirmação de exclusão
-        function pedirConfirmacaoExclusao(nome) {
-            const modal = new bootstrap.Modal(document.getElementById('confirmarExclusaoModal'));
-            document.getElementById('confirmarExclusaoBtn').onclick = function() {
-                deletarUsuario(nome);
-                modal.hide();
-            };
-            modal.show();
-        }
-
-        // Função para deletar um usuário
-        function deletarUsuario(nome) {
-            const linha = Array.from(usuariosTable.rows).find(row => row.cells[0].textContent === nome);
-            if (linha) {
-                usuariosTable.removeChild(linha);
-                salvarUsuarios();
-                toastr.warning('Usuário removido com sucesso!');
+        $.ajax({
+            url: '/visualizarUsuarios/' + id,
+            type: 'GET',
+            success: function (response) {
+                $('#modal_nome').val(response.nome);
+                $('#modal_idade').val(response.idade);
+                $('#modal_data_nascimento').val(response.data_nascimento);
+                $('#modal_profissao').val(response.profissao);
+                $('#visualizarModal').modal('show');
+            },
+            error: function () {
+                toastr.error('Erro ao carregar os detalhes.');
             }
+        });
+    });
+    //Evento para editar um usuário
+    $(document).on('click', '.editar', function () {
+    let id = $(this).data('id');
+
+    $.ajax({
+        url: '/visualizarUsuarios/' + id,
+        type: 'GET',
+        success: function (response) {
+            $('#modal_edit_name').val(response.nome);
+            $('#modal_edit_idade').val(response.idade);
+            $('#modal_edit_data_nascimento').val(response.data_nascimento);
+            $('#modal_edit_profissao').val(response.profissao);  // Preenche o select com a profissão do usuário
+            $('#editarModal').data('id', id);
+            $('#editarModal').modal('show');
+        },
+        
+        error: function () {
+            toastr.error('Erro ao carregar os dados para edição.');
+        }
+    });
+});
+
+//Salvar edição do usuário
+    $('#salvar-edicao').click(function () {
+        let id = $('#editarModal').data('id');
+        let nome= $('#modal_edit_name').val();
+        let idade= $('#modal_edit_idade').val();
+        console.log("Nome antes do envio:", nome); // Debug
+        
+        if (idade.length > 3) {
+            toastr.error("Erro: A idade não pode ter mais de três dígitos.");
+            return;
         }
 
-        // Carregar os usuários ao iniciar a página
-        window.onload = carregarUsuarios;
+        $.ajax({
+            url: '/atualizarUsuario/' + id,
+            type: 'PUT',
+            data: {
+                nome: nome,
+                idade: $('#modal_edit_idade').val(),
+                data_nascimento: $('#modal_edit_data_nascimento').val(),
+                profissao: $('#modal_edit_profissao').val()
+            },
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            },
+            success: function () {
+                $('#editarModal').modal('hide');
+                toastr.success('Registro atualizado com sucesso!');
+                carregarUsuarios();
+            },
+            error: function (xhr) {
+                toastr.error('Erro ao atualizar registro.');
+            }
+        });
+    });
+
+    //Evento para confirmar exclusão de um usuário
+    $(document).on('click', '.deletar', function () {
+        let id = $(this).data('id');
+        $('#confirmarExclusaoModal').modal('show');
+        $('#confirmarExclusaoBtn').data('id', id);
+    });
+    //Excluir usuário confirmado
+    $('#confirmarExclusaoBtn').html('<i class="fas fa-trash"></i>').click(function () {
+        let id = $(this).data('id');
+
+        $.ajax({
+            url: '/deletarUsuario/' + id,
+            type: 'DELETE',
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            },
+            success: function () {
+                $('#confirmarExclusaoModal').modal('hide');
+                $('tr[data-id="' + id + '"]').remove();
+                toastr.success('Registro excluído com sucesso!');
+            },
+            error: function () {
+                toastr.error('Erro ao excluir registro.');
+            }
+        });
+    });
+});
+
+
+
     </script>
 </body>
 </html>

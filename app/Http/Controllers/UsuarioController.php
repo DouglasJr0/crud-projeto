@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Usuario;
 use Illuminate\Http\Request;
 use Exception;
+use Illuminate\Support\Facades\DB; // Importação correta
 
 class UsuarioController extends Controller
 {
@@ -18,8 +19,9 @@ class UsuarioController extends Controller
         }
     }
 
-    public function store(Request $request)
+    public function cadastrarUsuario(Request $request)
     {
+        
         $request->validate([
             'nome' => 'required|string|max:255',
             'idade' => 'required|integer|min:0',
@@ -28,43 +30,58 @@ class UsuarioController extends Controller
         ]);
 
         try {
-            Usuario::create($request->all());
-            return response()->json(['message' => 'Usuário criado com sucesso!']);
+            DB::beginTransaction();
+            $novoUsuario = Usuario::create([
+              'nome'=> $request->nome,
+              'idade'=> $request->idade,
+              'data_nascimento' => $request ->data_nascimento,
+              'profissao' => $request ->profissao,
+            ]);
+            
+            DB::commit();
+            
+            return $novoUsuario;
+
         } catch (Exception $e) {
+            DB::rollback();
             return response()->json(['error' => 'Erro ao criar usuário: ' . $e->getMessage()], 500);
         }
+
+    }
+     
+    public function telaUsuario(){
+        $usuarios = Usuario::all();
+        return $usuarios;
+
+ 
     }
 
-    public function show($id)
+
+    public function visualizarUsuarios($id)
     {
         try {
-            $usuario = Usuario::findOrFail($id);
+                    $usuario = Usuario::findOrFail($id);
             return response()->json($usuario);
         } catch (Exception $e) {
-            return response()->json(['error' => 'Erro ao buscar usuário: ' . $e->getMessage()], 500);
+                  return response()->json(['error' => 'Erro ao buscar usuário: ' . $e->getMessage()], 500);
         }
     }
 
-    public function update(Request $request, $id)
-    {
-        try {
-            $usuario = Usuario::findOrFail($id);
+    public function AtualizarUsuario(Request $request, $id)
+{
+    try {
+        $usuario = Usuario::findOrFail($id);
+        $usuario->update($request->only(['nome', 'idade', 'data_nascimento', 'profissao']));
 
-            $request->validate([
-                'nome' => 'required|string|max:255',
-                'idade' => 'required|integer|min:0',
-                'data_nascimento' => 'required|date',
-                'profissao' => 'required|string',
-            ]);
-
-            $usuario->update($request->all());
-            return response()->json(['message' => 'Usuário atualizado com sucesso!']);
-        } catch (Exception $e) {
-            return response()->json(['error' => 'Erro ao atualizar usuário: ' . $e->getMessage()], 500);
-        }
+        return response()->json(['message' => 'Usuário atualizado com sucesso!']);
+    } catch (Exception $e) {
+        return response()->json(['error' => 'Erro ao atualizar usuário: ' . $e->getMessage()], 500);
     }
+}
 
-    public function destroy($id)
+
+
+    public function deletarUsuario($id)
     {
         try {
             $usuario = Usuario::findOrFail($id);
