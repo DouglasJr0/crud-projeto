@@ -108,7 +108,7 @@
             </tbody>
         </table>
     </div>
-
+bcsub
     <!-- Modal para visualização de usuário -->
     <div class="modal fade modal-visualizar" id="visualizarModal" tabindex="-1" aria-labelledby="visualizarModalLabel" aria-hidden="true">
         <div class="modal-dialog">
