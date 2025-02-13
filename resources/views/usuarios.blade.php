@@ -14,17 +14,17 @@
 
     <style>
         body {
-            background: linear-gradient(to bottom, #ffffff, #e0f7fa); /* Fundo branco e azul */
-            font-family: Arial, sans-serif;
-        }
+    background-color: rgb(245, 245, 245); /* Cor de fundo */
+    font-family: Arial, sans-serif;
+}
         .header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 10px 20px;
-            background-color: #0047ab;
+            padding: 15px 20px;
+            background-color:rgb(23, 40, 63);
             color: white;
-            border-bottom: 3px solid #003580;
+            border-bottom: rgb(23, 40, 63);
         }
         .header h1 {
             font-size: 24px;
@@ -38,9 +38,10 @@
         }
         .table {
             background-color: white;
-            border-radius: 5px;
+            border-radius: 20px;
             overflow: hidden;
         }
+        
         /*Modal Visualizar*/
         .modal-header {
             background-color: #0DCAF0
@@ -55,13 +56,25 @@
         .modal-exclusao .modal-header{
             background-color: #DC3545
         }
+
+          .table-custom {
+        background-color: rgb(23, 40, 63);
+        color: white; /* Para garantir que o texto fique visível em contraste com o fundo escuro */
+    }
+    .table-custom th {
+        background-color: rgb(23, 40, 63);
+        color: white;
+    }
+    .table-custom td {
+        background-color: #f8f9fa; /* Mantém as células mais claras para o conteúdo */
+    }
     </style>
 </head>
 <body>
     <!-- Cabeçalho -->
     <div class="header">
         <h1>CRUD de Usuários - Polícia Militar</h1>
-        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/bc/Logo_PMPR_2.svg/800px-Logo_PMPR_2.svg.png" alt="Símbolo da Polícia Militar">
+        <img src="https://seeklogo.com/images/B/brasao-ddtq-policia-militar-parana-logo-F880BA714A-seeklogo.com.png">
     </div>
 
     <!-- Conteúdo principal -->
@@ -89,12 +102,12 @@
                     <option value="Analista">Analista</option>
                 </select>
             </div>
-            <button id="btn-salvar" type="submit" class="btn btn-primary">Salvar</button> 
+            <button id="btn-salvar" type="submit" class="btn btn-primary w-20">Salvar</button> 
         </form>
 
         <h2>Lista de Usuários</h2>
-        <table class="table table-striped">
-            <thead class="table-dark">
+        <table class="table table-custom table-hover table-bordered">
+        <thead class="table-secondary bg-light">
                 <tr>
                     <th>Nome</th>
                     <th>Idade</th>
@@ -108,7 +121,6 @@
             </tbody>
         </table>
     </div>
-bcsub
     <!-- Modal para visualização de usuário -->
     <div class="modal fade modal-visualizar" id="visualizarModal" tabindex="-1" aria-labelledby="visualizarModalLabel" aria-hidden="true">
         <div class="modal-dialog">
@@ -227,6 +239,12 @@ $(document).ready(function () {
             toastr.error("Erro: A idade não pode ter mais de três dígitos.");
             return;
         }
+        
+        // Verifica se todos os campos obrigatórios estão preenchidos
+        if (nome === '' || idade === '' || data_nascimento === '' || profissao === '') {
+            toastr.error("Erro: Todos os campos obrigatórios devem ser preenchidos.");
+            return;
+        }
 
         let formData = {
             nome: nome,
@@ -332,7 +350,7 @@ $(document).ready(function () {
 //Salvar edição do usuário
     $('#salvar-edicao').click(function () {
         let id = $('#editarModal').data('id');
-        let nome= $('#modal_edit_name').val();
+        let nome= $('#modal_edit_name').val();git 
         let idade= $('#modal_edit_idade').val();
         console.log("Nome antes do envio:", nome); // Debug
         
