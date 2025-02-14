@@ -216,7 +216,7 @@ $(document).ready(function () {
             data_nascimento: data_nascimento,
             profissao: profissao
         };
-
+ikjbjkhbvkjhv {}
         $.ajax({
             type: "POST",
             url: "/cadastrarUsuario",
