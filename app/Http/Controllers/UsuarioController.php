@@ -50,10 +50,12 @@ class UsuarioController extends Controller
     }
      
     public function telaUsuario(){
-        $usuarios = Usuario::all();
-        return $usuarios;
-
- 
+        $usuarios = Usuario::select('id', 'nome', 'idade', 'data_nascimento', 'profissao')->get();
+        return response()->json([
+            "data" => $usuarios,
+            "recordsTotal" => $usuarios->count(),
+            "recordsFiltered" => $usuarios->count()
+        ]);
     }
 
 

@@ -9,22 +9,20 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/css/toastr.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    
-
-
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
     <style>
         body {
-            background: linear-gradient(to bottom, #ffffff, #e0f7fa); /* Fundo branco e azul */
+            background-color: rgb(245, 245, 245);
             font-family: Arial, sans-serif;
         }
         .header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 10px 20px;
-            background-color: #0047ab;
+            padding: 15px 20px;
+            background-color:rgb(23, 40, 63);
             color: white;
-            border-bottom: 3px solid #003580;
+            border-bottom: rgb(23, 40, 63);
         }
         .header h1 {
             font-size: 24px;
@@ -38,23 +36,36 @@
         }
         .table {
             background-color: white;
-            border-radius: 5px;
+            border-radius: 20px;
             overflow: hidden;
         }
         .modal-header {
-            background-color: #0047ab;
+            background-color: #0DCAF0;
+        }
+        .modal-editar .modal-header{
+            background-color: #198754;
+        }
+        .modal-exclusao .modal-header{
+            background-color: #DC3545;
+        }
+        .table-custom {
+            background-color: rgb(23, 40, 63);
             color: white;
+        }
+        .table-custom th {
+            background-color: rgb(23, 40, 63);
+            color: white;
+        }
+        .table-custom td {
+            background-color: #f8f9fa;
         }
     </style>
 </head>
 <body>
-    <!-- Cabeçalho -->
     <div class="header">
         <h1>CRUD de Usuários - Polícia Militar</h1>
-        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/bc/Logo_PMPR_2.svg/800px-Logo_PMPR_2.svg.png" alt="Símbolo da Polícia Militar">
+        <img src="https://seeklogo.com/images/B/brasao-ddtq-policia-militar-parana-logo-F880BA714A-seeklogo.com.png">
     </div>
-
-    <!-- Conteúdo principal -->
     <div class="container">
         <h2 class="mb-4">Gerenciar Usuários</h2>
         <form id="usuarioForm" class="mb-4">
@@ -79,28 +90,26 @@
                     <option value="Analista">Analista</option>
                 </select>
             </div>
-            <button id="btn-salvar" type="submit" class="btn btn-primary">Salvar</button> 
+            <button id="btn-salvar" type="submit" class="btn btn-primary w-20">Salvar</button> 
         </form>
-
         <h2>Lista de Usuários</h2>
-        <table class="table table-striped">
-            <thead class="table-dark">
-                <tr>
-                    <th>Nome</th>
-                    <th>Idade</th>
-                    <th>Data de Nascimento</th>
-                    <th>Profissão</th>
-                    <th>Ações</th>
-                </tr>
-            </thead>
-            <tbody id="usuariosTable">
-                <!-- Os usuários serão adicionados dinamicamente aqui -->
-            </tbody>
-        </table>
-    </div>
-
+        <table id="tabelaUsuarios" class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Nome</th>
+            <th>Idade</th>
+            <th>Data de Nascimento</th>
+            <th>Profissão</th>
+            <th>Ações</th>
+        </tr>
+    </thead>
+    <tbody id="usuariosTable">
+        <!-- As linhas de usuários serão adicionadas aqui via JavaScript -->
+    </tbody>
+</table>
+</div>
     <!-- Modal para visualização de usuário -->
-    <div class="modal fade" id="visualizarModal" tabindex="-1" aria-labelledby="visualizarModalLabel" aria-hidden="true">
+    <div class="modal fade modal-visualizar" id="visualizarModal" tabindex="-1" aria-labelledby="visualizarModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
@@ -134,8 +143,8 @@
         </div>
     </div>
 
-    <!-- Modal para editar usuário -->
-<div id="editarModal" class="modal fade" tabindex="-1" aria-hidden="true">
+<!-- Modal para editar usuário -->
+<div id="editarModal" class="modal fade modal-editar" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
@@ -146,19 +155,24 @@
                 <form id="editarUsuarioForm">
                     <div class="mb-3">
                         <label for="modal_edit_nome" class="form-label">Nome</label>
-                        <input type="text" id="modal_edit_nome" name="nome" class="form-control" required>
+                        <input type="text" id="modal_edit_name" name="nome" class="form-control" required>
                     </div>
                     <div class="mb-3">
                         <label for="modal_edit_idade" class="form-label">Idade</label>
-                        <input type="number" id="modal_edit_idade" name="idade" class="form-control" required min="18" max="120">
-                    </div>
+                        <input type="number" id="modal_edit_idade" name="idade" class="form-control" required min="18" max="120" maxlength="3">
+                    </div>     
                     <div class="mb-3">
-                        <label for="modal_edit_data_nascimento" class="form-label">Data de Nascimento</label>
+                        <label for="modal_edit_profissao" class="form-label">Data de Nascimento</label>
                         <input type="date" id="modal_edit_data_nascimento" name="data_nascimento" class="form-control" required>
                     </div>
                     <div class="mb-3">
-                        <label for="modal_edit_profissao" class="form-label">Profissão</label>
-                        <input type="text" id="modal_edit_profissao" name="profissao" class="form-control" required>
+                        <label for="modal_edit_profissao" class="form-label">Profissao</label>
+                        <select class="form-select" id="modal_edit_profissao" name="profissao" required>
+                            <option value="Desenvolvedor">Desenvolvedor</option>
+                            <option value="Designer">Designer</option>
+                            <option value="Gerente">Gerente</option>
+                            <option value="Analista">Analista</option>
+                        </select>
                     </div>
                 </form>
             </div>
@@ -170,12 +184,8 @@
     </div>
 </div>
 
-
-
-
-
     <!-- Modal de confirmação de exclusão -->
-    <div class="modal fade" id="confirmarExclusaoModal" tabindex="-1" aria-labelledby="confirmarExclusaoModalLabel" aria-hidden="true">
+    <div class="modal fade modal-exclusao" id="confirmarExclusaoModal" tabindex="-1" aria-labelledby="confirmarExclusaoModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
@@ -193,29 +203,66 @@
         </div>
     </div>
 
+    
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
     <script>
-        
+// Ajuste no JavaScript para exibir os dados corretamente
 $(document).ready(function () {
-    carregarUsuarios();
+    $('#tabelaUsuarios').DataTable({
+        "processing": true,
+        "serverSide": true,
+        "ajax": {
+            "url": "/telaUsuario",
+            "type": "GET"
+        },
+        "columns": [
+            { "data": "nome" },
+            { "data": "idade" },
+            { "data": "data_nascimento" },
+            { "data": "profissao" },
+            {
+                "data": "id",
+                "render": function (data) {
+                    return `
+                        <button class='btn btn-info btn-sm visualizar' data-id='${data}'><i class='fas fa-eye'></i></button>
+                        <button class='btn btn-success btn-sm editar' data-id='${data}'><i class='fas fa-edit'></i></button>
+                        <button class='btn btn-danger btn-sm deletar' data-id='${data}'><i class='fas fa-trash'></i></button>
+                    `;
+                }
+            }
+        ],
+        "language": {
+            "sProcessing": "Processando...",
+            "sLengthMenu": "Exibir _MENU_ registros por página",
+            "sZeroRecords": "Nenhum registro encontrado",
+            "sInfo": "Exibindo de _START_ até _END_ de _TOTAL_ registros",
+            "sInfoEmpty": "Exibindo 0 até 0 de 0 registros",
+            "sInfoFiltered": "(filtrado de _MAX_ registros no total)",
+            "sSearch": "Buscar pelo nome:",
+            "oPaginate": {
+                "sFirst": "Primeiro",
+                "sPrevious": "Anterior",
+                "sNext": "Próximo",
+                "sLast": "Último"
+            }
+        }
+    });
 
+    // Atualizar tabela após cadastro bem-sucedido
     $('#btn-salvar').click(function (e) {
         e.preventDefault();
-
-        var nome = $('#nome').val();
-        var idade = $('#idade').val();
-        var data_nascimento = $('#data_nascimento').val();
-        var profissao = $('#profissao').val();
-
         let formData = {
-            nome: nome,
-            idade: idade,
-            data_nascimento: data_nascimento,
-            profissao: profissao
+            nome: $('#nome').val(),
+            idade: $('#idade').val(),
+            data_nascimento: $('#data_nascimento').val(),
+            profissao: $('#profissao').val()
         };
+
         $.ajax({
             type: "POST",
             url: "/cadastrarUsuario",
@@ -223,11 +270,10 @@ $(document).ready(function () {
             headers: {
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
             },
-            dataType: "json",
-            success: function (usuario) {
-                adicionarLinhaTabela(usuario);
-                $('#usuarioForm').trigger("reset");
+            success: function () {
                 toastr.success("Usuário cadastrado com sucesso!");
+                $('#tabelaUsuarios').DataTable().ajax.reload();
+                $('#usuarioForm').trigger("reset");
             },
             error: function () {
                 toastr.error("Erro ao salvar o usuário.");
@@ -235,39 +281,7 @@ $(document).ready(function () {
         });
     });
 
-    function carregarUsuarios() {
-        $.ajax({
-            type: "GET",
-            url: "/telaUsuario",
-            dataType: "json",
-            success: function (usuarios) {
-                $('#usuariosTable').empty();
-                $.each(usuarios, function (index, usuario) {
-                    adicionarLinhaTabela(usuario);
-                });
-            },
-            error: function () {
-                toastr.error("Erro ao carregar os usuários.");
-            }
-        });
-    }
-
-    function adicionarLinhaTabela(usuario) {
-        var novaLinha =
-            '<tr data-id="' + usuario.id + '">' +
-            '<td>' + usuario.nome + '</td>' +
-            '<td>' + usuario.idade + '</td>' +
-            '<td>' + usuario.data_nascimento + '</td>' +
-            '<td>' + usuario.profissao + '</td>' +
-            '<td>' +
-            "<button class='btn btn-info btn-sm ms-1 visualizar' data-id='" + usuario.id + "'><i class='fas fa-eye'></i></button>" +
-            "<button class='btn btn-success btn-sm ms-1 editar' data-id='" + usuario.id + "'><i class='fas fa-edit'></i></button>" +
-            "<button class='btn btn-danger btn-sm ms-1 deletar' data-id='" + usuario.id + "'><i class='fas fa-trash'></i></button>" +
-            '</td>' +
-            '</tr>';
-        $('#usuariosTable').append(novaLinha);
-    }
-
+    // Evento para visualizar detalhes
     $(document).on('click', '.visualizar', function () {
         let id = $(this).data('id');
 
@@ -287,6 +301,7 @@ $(document).ready(function () {
         });
     });
 
+    // Evento para editar usuário
     $(document).on('click', '.editar', function () {
         let id = $(this).data('id');
 
@@ -294,7 +309,7 @@ $(document).ready(function () {
             url: '/visualizarUsuarios/' + id,
             type: 'GET',
             success: function (response) {
-                $('#modal_edit_nome').val(response.nome);
+                $('#modal_edit_name').val(response.nome);
                 $('#modal_edit_idade').val(response.idade);
                 $('#modal_edit_data_nascimento').val(response.data_nascimento);
                 $('#modal_edit_profissao').val(response.profissao);
@@ -307,14 +322,15 @@ $(document).ready(function () {
         });
     });
 
-    $('#salvar-edicao').html('<i class="fas fa-save"></i>').click(function () {
+    // Salvar edição
+    $('#salvar-edicao').click(function () {
         let id = $('#editarModal').data('id');
 
         $.ajax({
-            url: '/AtualizarUsuario/' + id,
+            url: '/atualizarUsuario/' + id,
             type: 'PUT',
             data: {
-                nome: $('#modal_edit_nome').val(),
+                nome: $('#modal_edit_name').val(),
                 idade: $('#modal_edit_idade').val(),
                 data_nascimento: $('#modal_edit_data_nascimento').val(),
                 profissao: $('#modal_edit_profissao').val()
@@ -324,22 +340,24 @@ $(document).ready(function () {
             },
             success: function () {
                 $('#editarModal').modal('hide');
+                tabela.ajax.reload();
                 toastr.success('Registro atualizado com sucesso!');
-                carregarUsuarios();
             },
-            error: function (xhr) {
-                toastr.error(xhr.responseJSON.error || 'Erro ao atualizar registro.');
+            error: function () {
+                toastr.error('Erro ao atualizar registro.');
             }
         });
     });
 
+    // Evento para deletar usuário
     $(document).on('click', '.deletar', function () {
         let id = $(this).data('id');
         $('#confirmarExclusaoModal').modal('show');
         $('#confirmarExclusaoBtn').data('id', id);
     });
 
-    $('#confirmarExclusaoBtn').html('<i class="fas fa-trash"></i>').click(function () {
+    // Confirmar exclusão
+    $('#confirmarExclusaoBtn').click(function () {
         let id = $(this).data('id');
 
         $.ajax({
@@ -350,7 +368,7 @@ $(document).ready(function () {
             },
             success: function () {
                 $('#confirmarExclusaoModal').modal('hide');
-                $('tr[data-id="' + id + '"]').remove();
+                tabela.ajax.reload();
                 toastr.success('Registro excluído com sucesso!');
             },
             error: function () {
@@ -360,8 +378,6 @@ $(document).ready(function () {
     });
 });
 
-
-
-    </script>
+</script>
 </body>
 </html>
