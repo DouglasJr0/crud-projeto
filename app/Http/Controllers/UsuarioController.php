@@ -81,6 +81,7 @@ class UsuarioController extends Controller
 
 
 
+
     public function deletarUsuario($id)
     {
         try {
