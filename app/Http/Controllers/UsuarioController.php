@@ -49,12 +49,12 @@ class UsuarioController extends Controller
 
     }
      
-    public function telaUsuario(){
-        $usuarios = Usuario::all();
-        return $usuarios;
+    public function telaUsuario()
+{
+    $usuarios = Usuario::all();
+    return response()->json($usuarios);
+}
 
- 
-    }
 
 
     public function visualizarUsuarios($id)
