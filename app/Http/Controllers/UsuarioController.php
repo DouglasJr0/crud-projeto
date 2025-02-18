@@ -50,22 +50,20 @@ class UsuarioController extends Controller
     }
      
     public function telaUsuario(){
-        $usuarios = Usuario::select('id', 'nome', 'idade', 'data_nascimento', 'profissao')->get();
-        return response()->json([
-            "data" => $usuarios,
-            "recordsTotal" => $usuarios->count(),
-            "recordsFiltered" => $usuarios->count()
-        ]);
+        $usuarios = Usuario::all();
+        return $usuarios;
+
+ 
     }
 
 
     public function visualizarUsuarios($id)
     {
         try {
-            $usuario = Usuario::findOrFail($id);
+                    $usuario = Usuario::findOrFail($id);
             return response()->json($usuario);
         } catch (Exception $e) {
-            return response()->json(['error' => 'Erro ao buscar usuário: ' . $e->getMessage()], 500);
+                  return response()->json(['error' => 'Erro ao buscar usuário: ' . $e->getMessage()], 500);
         }
     }
 

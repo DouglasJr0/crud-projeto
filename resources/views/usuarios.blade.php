@@ -211,31 +211,13 @@
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
     <script>
-// Ajuste no JavaScript para exibir os dados corretamente
 $(document).ready(function () {
-    $('#tabelaUsuarios').DataTable({
-        "processing": true,
-        "serverSide": true,
-        "ajax": {
-            "url": "/telaUsuario",
-            "type": "GET"
-        },
-        "columns": [
-            { "data": "nome" },
-            { "data": "idade" },
-            { "data": "data_nascimento" },
-            { "data": "profissao" },
-            {
-                "data": "id",
-                "render": function (data) {
-                    return `
-                        <button class='btn btn-info btn-sm visualizar' data-id='${data}'><i class='fas fa-eye'></i></button>
-                        <button class='btn btn-success btn-sm editar' data-id='${data}'><i class='fas fa-edit'></i></button>
-                        <button class='btn btn-danger btn-sm deletar' data-id='${data}'><i class='fas fa-trash'></i></button>
-                    `;
-                }
-            }
-        ],
+    // Inicializa o DataTable com recursos ativados
+    var tabela = $('#tabelaUsuarios').DataTable({
+        "paging": true,
+        "lengthMenu": [5, 10, 25, 50],
+        "pageLength": 5,
+        "searching": true,
         "language": {
             "sProcessing": "Processando...",
             "sLengthMenu": "Exibir _MENU_ registros por página",
@@ -250,30 +232,71 @@ $(document).ready(function () {
                 "sNext": "Próximo",
                 "sLast": "Último"
             }
-        }
+        },
+        "dom": 'lfrtip'
     });
 
-    // Atualizar tabela após cadastro bem-sucedido
+    function carregarUsuarios() {
+        $.ajax({
+            type: "GET",
+            url: "/telaUsuario",
+            dataType: "json",
+            success: function (usuarios) {
+                $('#usuariosTable').empty();
+                $.each(usuarios, function (index, usuario) {
+                    adicionarLinhaTabela(usuario);
+                });
+            },
+            error: function () {
+                toastr.error("Erro ao carregar os usuários.");
+            }
+        });
+    }
+
+    function adicionarLinhaTabela(usuario) {
+        var novaLinha =
+            `<tr data-id="${usuario.id}">
+                <td>${usuario.nome}</td>
+                <td>${usuario.idade}</td>
+                <td>${usuario.data_nascimento}</td>
+                <td>${usuario.profissao}</td>
+                <td>
+                    <button class='btn btn-info btn-sm ms-1 visualizar' data-id='${usuario.id}'><i class='fas fa-eye'></i></button>
+                    <button class='btn btn-success btn-sm ms-1 editar' data-id='${usuario.id}'><i class='fas fa-edit'></i></button>
+                    <button class='btn btn-danger btn-sm ms-1 deletar' data-id='${usuario.id}'><i class='fas fa-trash'></i></button>
+                </td>
+            </tr>`;
+        $('#usuariosTable').append(novaLinha);
+    }
+
     $('#btn-salvar').click(function (e) {
         e.preventDefault();
-        let formData = {
-            nome: $('#nome').val(),
-            idade: $('#idade').val(),
-            data_nascimento: $('#data_nascimento').val(),
-            profissao: $('#profissao').val()
-        };
+        var nome = $('#nome').val();
+        var idade = $('#idade').val();
+        var data_nascimento = $('#data_nascimento').val();
+        var profissao = $('#profissao').val();
+
+        if (idade.length > 3) {
+            toastr.error("Erro: A idade não pode ter mais de três dígitos.");
+            return;
+        }
+        if (!nome || !idade || !data_nascimento || !profissao) {
+            toastr.error("Erro: Todos os campos obrigatórios devem ser preenchidos.");
+            return;
+        }
+
+        let formData = { nome, idade, data_nascimento, profissao };
 
         $.ajax({
             type: "POST",
             url: "/cadastrarUsuario",
             data: formData,
-            headers: {
-                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-            },
-            success: function () {
-                toastr.success("Usuário cadastrado com sucesso!");
-                $('#tabelaUsuarios').DataTable().ajax.reload();
+            headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') },
+            dataType: "json",
+            success: function (usuario) {
+                adicionarLinhaTabela(usuario);
                 $('#usuarioForm').trigger("reset");
+                toastr.success("Usuário cadastrado com sucesso!");
             },
             error: function () {
                 toastr.error("Erro ao salvar o usuário.");
@@ -281,10 +304,8 @@ $(document).ready(function () {
         });
     });
 
-    // Evento para visualizar detalhes
     $(document).on('click', '.visualizar', function () {
         let id = $(this).data('id');
-
         $.ajax({
             url: '/visualizarUsuarios/' + id,
             type: 'GET',
@@ -301,10 +322,8 @@ $(document).ready(function () {
         });
     });
 
-    // Evento para editar usuário
     $(document).on('click', '.editar', function () {
         let id = $(this).data('id');
-
         $.ajax({
             url: '/visualizarUsuarios/' + id,
             type: 'GET',
@@ -322,26 +341,30 @@ $(document).ready(function () {
         });
     });
 
-    // Salvar edição
     $('#salvar-edicao').click(function () {
         let id = $('#editarModal').data('id');
+        let nome = $('#modal_edit_name').val();
+        let idade = $('#modal_edit_idade').val();
+
+        if (idade.length > 3) {
+            toastr.error("Erro: A idade não pode ter mais de três dígitos.");
+            return;
+        }
 
         $.ajax({
             url: '/atualizarUsuario/' + id,
             type: 'PUT',
             data: {
-                nome: $('#modal_edit_name').val(),
+                nome: nome,
                 idade: $('#modal_edit_idade').val(),
                 data_nascimento: $('#modal_edit_data_nascimento').val(),
                 profissao: $('#modal_edit_profissao').val()
             },
-            headers: {
-                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-            },
+            headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') },
             success: function () {
                 $('#editarModal').modal('hide');
-                tabela.ajax.reload();
                 toastr.success('Registro atualizado com sucesso!');
+                carregarUsuarios();
             },
             error: function () {
                 toastr.error('Erro ao atualizar registro.');
@@ -349,26 +372,21 @@ $(document).ready(function () {
         });
     });
 
-    // Evento para deletar usuário
     $(document).on('click', '.deletar', function () {
         let id = $(this).data('id');
         $('#confirmarExclusaoModal').modal('show');
         $('#confirmarExclusaoBtn').data('id', id);
     });
 
-    // Confirmar exclusão
     $('#confirmarExclusaoBtn').click(function () {
         let id = $(this).data('id');
-
         $.ajax({
             url: '/deletarUsuario/' + id,
             type: 'DELETE',
-            headers: {
-                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-            },
+            headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') },
             success: function () {
                 $('#confirmarExclusaoModal').modal('hide');
-                tabela.ajax.reload();
+                $('tr[data-id="' + id + '"]').remove();
                 toastr.success('Registro excluído com sucesso!');
             },
             error: function () {
@@ -376,6 +394,8 @@ $(document).ready(function () {
             }
         });
     });
+
+    carregarUsuarios();
 });
 
 </script>
