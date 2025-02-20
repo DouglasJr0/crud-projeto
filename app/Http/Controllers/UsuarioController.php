@@ -71,7 +71,7 @@ class UsuarioController extends Controller
 {
     try {
         $usuario = Usuario::findOrFail($id);
-        $usuario->update($request->only(['nome', 'idade', 'data_nascimento', 'profissao']));
+        // $usuario->update($request->only(['nome', 'idade', 'data_nascimento', 'profissao']));
 
         return response()->json(['message' => 'Usuário atualizado com sucesso!']);
     } catch (Exception $e) {

@@ -66,6 +66,15 @@
     .table-custom td {
       background-color: #f8f9fa;
     }
+    /* Centraliza o conteúdo do DataTable */
+    #tabelaUsuarios th, #tabelaUsuarios td {
+      text-align: center;
+    }
+    /* Estiliza o cabeçalho do DataTable com a mesma cor do cabeçalho principal */
+    #tabelaUsuarios thead th {
+      background-color: rgb(23, 40, 63);
+      color: white;
+    }
   </style>
 </head>
 <body>
@@ -75,24 +84,24 @@
   </div>
   <div class="container">
     <h2 class="mb-4">Gerenciar Usuários</h2>
-    <!-- Definindo o método POST -->
-    <form id="usuarioForm" class="mb-4" method="POST">
+    <!-- Formulário para cadastro (novalidate para desabilitar validação nativa) -->
+    <form id="usuarioForm" class="mb-4" method="POST" novalidate>
       <div class="mb-3">
         <label for="nome" class="form-label">Nome</label>
-        <input type="text" class="form-control" id="nome" name="nome" required minlength="3" maxlength="50">
+        <input type="text" class="form-control" id="nome" name="nome" placeholder="Digite seu Nome" minlength="3" maxlength="50">
       </div>
       <div class="mb-3">
         <label for="idade" class="form-label">Idade</label>
-        <input type="number" class="form-control" id="idade" name="idade" required min="18" max="120">
+        <input type="number" class="form-control" id="idade" name="idade" placeholder="Digite sua Idade" min="18" max="120">
       </div>
       <div class="mb-3">
         <label for="data_nascimento" class="form-label">Data de Nascimento</label>
-        <!-- Alterado para type="text" para usar o datepicker -->
-        <input type="text" class="form-control" id="data_nascimento" name="data_nascimento" required>
+        <input type="text" class="form-control" id="data_nascimento" name="data_nascimento" placeholder="Digite sua data de Nascimento" minlength="3" maxlength="50">
       </div>
       <div class="mb-3">
         <label for="profissao" class="form-label">Profissão</label>
-        <select class="form-select" id="profissao" name="profissao" required>
+        <select class="form-select" id="profissao" name="profissao">
+          <option value="">Selecione...</option>
           <option value="Desenvolvedor">Desenvolvedor</option>
           <option value="Designer">Designer</option>
           <option value="Gerente">Gerente</option>
@@ -137,7 +146,6 @@
           </div>
           <div class="mb-3">
             <label for="modal_data_nascimento" class="form-label">Data de Nascimento</label>
-            <!-- Alterado para text para manter o formato -->
             <input type="text" class="form-control" id="modal_data_nascimento" disabled>
           </div>
           <div class="mb-3">
@@ -152,7 +160,7 @@
     </div>
   </div>
 
-  <!-- Modal para editar usuário -->
+  <!-- Modal para editar usuário (novalidate para desabilitar validação nativa) -->
   <div id="editarModal" class="modal fade modal-editar" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
       <div class="modal-content">
@@ -161,23 +169,25 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
         </div>
         <div class="modal-body">
-          <form id="editarUsuarioForm">
+          <form id="editarUsuarioForm" novalidate>
+            <!-- Campo oculto para armazenar o ID do usuário -->
+            <input type="hidden" id="edit_user_id" name="id">
             <div class="mb-3">
               <label for="modal_edit_nome" class="form-label">Nome</label>
-              <input type="text" id="modal_edit_name" name="nome" class="form-control" required>
+              <input type="text" id="modal_edit_name" name="nome" class="form-control">
             </div>
             <div class="mb-3">
               <label for="modal_edit_idade" class="form-label">Idade</label>
-              <input type="number" id="modal_edit_idade" name="idade" class="form-control" required min="18" max="120">
+              <input type="number" id="modal_edit_idade" name="idade" class="form-control" min="18" max="120">
             </div>     
             <div class="mb-3">
               <label for="modal_edit_data_nascimento" class="form-label">Data de Nascimento</label>
-              <!-- Alterado para text -->
-              <input type="text" id="modal_edit_data_nascimento" name="data_nascimento" class="form-control" required>
+              <input type="text" id="modal_edit_data_nascimento" name="data_nascimento" class="form-control">
             </div>
             <div class="mb-3">
               <label for="modal_edit_profissao" class="form-label">Profissão</label>
-              <select class="form-select" id="modal_edit_profissao" name="profissao" required>
+              <select class="form-select" id="modal_edit_profissao" name="profissao">
+                <option value="">Selecione...</option>
                 <option value="Desenvolvedor">Desenvolvedor</option>
                 <option value="Designer">Designer</option>
                 <option value="Gerente">Gerente</option>
@@ -289,7 +299,6 @@
       
       // Adiciona uma linha usando a API do DataTables com formatação de data
       function adicionarLinhaTabela(usuario) {
-        // Converte a data do formato "YYYY-MM-DD" para "DD/MM/YYYY"
         var formattedDate = moment(usuario.data_nascimento, "YYYY-MM-DD").format("DD/MM/YYYY");
         var rowNode = tabela.row.add([
           usuario.nome,
@@ -300,13 +309,29 @@
            <button class='btn btn-success btn-sm ms-1 editar' data-id='${usuario.id}'><i class='fas fa-edit'></i></button>
            <button class='btn btn-danger btn-sm ms-1 deletar' data-id='${usuario.id}'><i class='fas fa-trash'></i></button>`
         ]).draw().node();
-        // Atribui um atributo "data-id" para identificação posterior
         $(rowNode).attr('data-id', usuario.id);
       }
       
-      // Salvar usuário utilizando o evento de submit do formulário
+      // Salvar usuário (formulário principal)
       $('#usuarioForm').submit(function (e) {
         e.preventDefault();
+        if ($('#nome').val().trim() === '') {
+          toastr.error("Erro: O campo Nome é obrigatório.");
+          return;
+        }
+        if ($('#idade').val().trim() === '') {
+          toastr.error("Erro: O campo Idade é obrigatório.");
+          return;
+        }
+        if ($('#data_nascimento').val().trim() === '') {
+          toastr.error("Erro: O campo Data de Nascimento é obrigatório.");
+          return;
+        }
+        if ($('#profissao').val().trim() === '') {
+          toastr.error("Erro: O campo Profissão é obrigatório.");
+          return;
+        }
+
         var nome = $('#nome').val();
         var idade = $('#idade').val();
         var data_nascimento = $('#data_nascimento').val();
@@ -314,10 +339,6 @@
 
         if (idade.length > 3) {
           toastr.error("Erro: A idade não pode ter mais de três dígitos.");
-          return;
-        }
-        if (!nome || !idade || !data_nascimento || !profissao) {
-          toastr.error("Erro: Todos os campos obrigatórios devem ser preenchidos.");
           return;
         }
 
@@ -349,7 +370,6 @@
           success: function (response) {
             $('#modal_nome').val(response.nome);
             $('#modal_idade').val(response.idade);
-            // Converte a data antes de exibir
             $('#modal_data_nascimento').val(moment(response.data_nascimento, "YYYY-MM-DD").format("DD/MM/YYYY"));
             $('#modal_profissao').val(response.profissao);
             $('#visualizarModal').modal('show');
@@ -360,19 +380,18 @@
         });
       });
       
-      // Editar usuário
+      // Editar usuário: carrega os dados e armazena o ID no campo oculto
       $(document).on('click', '.editar', function () {
         let id = $(this).data('id');
         $.ajax({
           url: '/visualizarUsuarios/' + id,
           type: 'GET',
           success: function (response) {
+            $('#edit_user_id').val(id);
             $('#modal_edit_name').val(response.nome);
             $('#modal_edit_idade').val(response.idade);
-            // Converte a data para o formato dd/mm/yyyy antes de preencher o campo
             $('#modal_edit_data_nascimento').val(moment(response.data_nascimento, "YYYY-MM-DD").format("DD/MM/YYYY"));
             $('#modal_edit_profissao').val(response.profissao);
-            $('#editarModal').data('id', id);
             $('#editarModal').modal('show');
           },
           error: function () {
@@ -381,43 +400,57 @@
         });
       });
       
-      // Salvar edição utilizando _method override (se necessário)
+      // Salvar edição do usuário no modal
       $('#salvar-edicao').click(function () {
-  let id = $('#editarModal').data('id');
-  let nome = $('#modal_edit_name').val();
-  let idade = $('#modal_edit_idade').val();
-  let dataNascimento = $('#modal_edit_data_nascimento').val();
-  let profissao = $('#modal_edit_profissao').val();
+        let id = $('#edit_user_id').val();
+        if ($('#modal_edit_name').val().trim() === '') {
+          toastr.error("Erro: O campo Nome é obrigatório.");
+          return;
+        }
+        if ($('#modal_edit_idade').val().trim() === '') {
+          toastr.error("Erro: O campo Idade é obrigatório.");
+          return;
+        }
+        if ($('#modal_edit_data_nascimento').val().trim() === '') {
+          toastr.error("Erro: O campo Data de Nascimento é obrigatório.");
+          return;
+        }
+        if ($('#modal_edit_profissao').val().trim() === '') {
+          toastr.error("Erro: O campo Profissão é obrigatório.");
+          return;
+        }
+      
+        let nome = $('#modal_edit_name').val();
+        let idade = $('#modal_edit_idade').val();
+        let dataNascimento = $('#modal_edit_data_nascimento').val();
+        let profissao = $('#modal_edit_profissao').val();
 
-  if (idade.length > 3) {
-    toastr.error("Erro: A idade não pode ter mais de três dígitos.");
-    return;
-  }
+        if (idade.length > 3) {
+          toastr.error("Erro: A idade não pode ter mais de três dígitos.");
+          return;
+        }
 
-  $.ajax({
-    url: '/atualizarUsuario/' + id,
-    type: 'POST', // Usando POST com _method override
-    data: {
-      _method: 'PUT',
-      nome: nome,
-      idade: idade,
-      // Converte de dd/mm/yyyy para yyyy-mm-dd
-      data_nascimento: moment(dataNascimento, 'DD/MM/YYYY').format('YYYY-MM-DD'),
-      profissao: profissao
-    },
-    headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') },
-    success: function () {
-      $('#editarModal').modal('hide');
-      toastr.success('Registro atualizado com sucesso!');
-      carregarUsuarios();
-    },
-    error: function (xhr) {
-      console.log(xhr.responseText);
-      toastr.error('Erro ao atualizar registro.');
-    }
-  });
-});
-
+        $.ajax({
+          url: '/atualizarUsuario/' + id,
+          method: 'PUT',          
+          data: {
+            nome: nome,
+            idade: idade,
+            data_nascimento: moment(dataNascimento, 'DD/MM/YYYY').format('YYYY-MM-DD'),
+            profissao: profissao
+          },
+          headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') },
+          success: function () {
+            $('#editarModal').modal('hide');
+            toastr.success('Registro atualizado com sucesso!');
+            carregarUsuarios();
+          },
+          error: function (xhr) {
+            console.log(xhr.responseText);
+            toastr.error('Erro ao atualizar registro.');
+          }
+        });
+      });
       
       // Deletar usuário
       $(document).on('click', '.deletar', function () {
@@ -434,7 +467,6 @@
           headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') },
           success: function () {
             $('#confirmarExclusaoModal').modal('hide');
-            // Remove a linha usando a API do DataTables
             tabela.row($('tr[data-id="' + id + '"]')).remove().draw();
             toastr.success('Registro excluído com sucesso!');
           },
