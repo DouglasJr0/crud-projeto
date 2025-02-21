@@ -75,6 +75,19 @@
       background-color: rgb(23, 40, 63);
       color: white;
     }
+    /* Move o campo de pesquisa um pouco para cima */
+    #tabelaUsuarios_filter {
+      margin-top: -40px;
+    }
+
+    #tabelaUsuarios_length{
+      margin-bottom: 20 px; 
+    }
+
+    .btn btn-info btn-sm ms-1 visualizar{
+
+      color:white;
+    }
   </style>
 </head>
 <body>
@@ -96,7 +109,7 @@
       </div>
       <div class="mb-3">
         <label for="data_nascimento" class="form-label">Data de Nascimento</label>
-        <input type="text" class="form-control" id="data_nascimento" name="data_nascimento" placeholder="Digite sua data de Nascimento" minlength="3" maxlength="50">
+        <input type="text" class="form-control" id="data_nascimento" name="data_nascimento" placeholder="dd/mm/yyyy" minlength="3" maxlength="50">
       </div>
       <div class="mb-3">
         <label for="profissao" class="form-label">Profissão</label>
@@ -305,7 +318,7 @@
           usuario.idade,
           formattedDate,
           usuario.profissao,
-          `<button class='btn btn-info btn-sm ms-1 visualizar' data-id='${usuario.id}'><i class='fas fa-eye'></i></button>
+          `<button class='btn btn-info btn-sm ms-1 visualizar ' style="color:white" data-id='${usuario.id}'><i class='fas fa-eye'></i></button>
            <button class='btn btn-success btn-sm ms-1 editar' data-id='${usuario.id}'><i class='fas fa-edit'></i></button>
            <button class='btn btn-danger btn-sm ms-1 deletar' data-id='${usuario.id}'><i class='fas fa-trash'></i></button>`
         ]).draw().node();
@@ -317,24 +330,28 @@
         e.preventDefault();
         if ($('#nome').val().trim() === '') {
           toastr.error("Erro: O campo Nome é obrigatório.");
+          $('#nome').focus();
           return;
         }
         if ($('#idade').val().trim() === '') {
           toastr.error("Erro: O campo Idade é obrigatório.");
+          $('#idade').focus();
           return;
         }
         if ($('#data_nascimento').val().trim() === '') {
           toastr.error("Erro: O campo Data de Nascimento é obrigatório.");
+          $('#data_nascimento').focus();
           return;
         }
         if ($('#profissao').val().trim() === '') {
           toastr.error("Erro: O campo Profissão é obrigatório.");
+          $('#profissao').focus();
           return;
         }
 
         var nome = $('#nome').val();
         var idade = $('#idade').val();
-        var data_nascimento = $('#data_nascimento').val();
+        var dataNascimento = $('#data_nascimento').val();
         var profissao = $('#profissao').val();
 
         if (idade.length > 3) {
@@ -342,7 +359,15 @@
           return;
         }
 
-        let formData = { nome, idade, data_nascimento, profissao };
+        // Converter a data para o formato YYYY-MM-DD
+        var dataNascimentoFormatada = moment(dataNascimento, "DD/MM/YYYY").format("YYYY-MM-DD");
+
+        let formData = { 
+          nome: nome, 
+          idade: idade, 
+          data_nascimento: dataNascimentoFormatada, 
+          profissao: profissao 
+        };
 
         $.ajax({
           type: "POST",
@@ -405,18 +430,22 @@
         let id = $('#edit_user_id').val();
         if ($('#modal_edit_name').val().trim() === '') {
           toastr.error("Erro: O campo Nome é obrigatório.");
+          $('#modal_edit_name').focus();
           return;
         }
         if ($('#modal_edit_idade').val().trim() === '') {
           toastr.error("Erro: O campo Idade é obrigatório.");
+          $('#modal_edit_idade').focus();
           return;
         }
         if ($('#modal_edit_data_nascimento').val().trim() === '') {
           toastr.error("Erro: O campo Data de Nascimento é obrigatório.");
+          $('#modal_edit_data_nascimento').focus();
           return;
         }
         if ($('#modal_edit_profissao').val().trim() === '') {
           toastr.error("Erro: O campo Profissão é obrigatório.");
+          $('#modal_edit_profissao').focus();
           return;
         }
       
@@ -432,7 +461,7 @@
 
         $.ajax({
           url: '/atualizarUsuario/' + id,
-          method: 'PUT',          
+          method: 'PUT',
           data: {
             nome: nome,
             idade: idade,
